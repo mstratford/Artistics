@@ -12,14 +12,19 @@ app = Flask(__name__)
 def page():
     return render_template('home.html', data=None)
 
+# Render the search page with results.
 @app.route('/search')
 def page_search():
     result = None
-    if request.args.get("artist"):
-        term = request.args.get("artist")
-        result = api_search_artist(term)
-        result["term"] = term
-
+    # Get the artist GET param value (if present)
+    # If no term provided, template will show missing term message.
+    term = request.args.get("artist")
+    if term:
+        # Call API for artists matching list.
+        result = {
+            "artist-list": api_search_artist(term),
+            "term": term
+        }
     return render_template('artist-list.html', data=result)
 
 
@@ -64,8 +69,9 @@ def api_search_artist(name):
         result = mbz.search_artists(artist = name)
     except mbz.WebServiceError as exc:
         result = None
+
     if "artist-list" in result:
-        return result
+        return result["artist-list"]
     else:
         return None
 
