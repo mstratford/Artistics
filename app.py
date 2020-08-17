@@ -99,35 +99,46 @@ def api_get_recordings(id):
         result = mbz.browse_recordings(artist=id, limit=1000)
     except mbz.WebServiceError as exc:
         result = None
-    #if "artist" in result:
-    return result
+
+    if "recording-list" in result:
+        return result["recording-list"]
+    return None
 
 def api_get_releases(id):
     try:
         mbz.set_useragent("Artistics", "v1.0","hi@mstratford.net")
-        result = mbz.browse_release_groups(artist=id)["release-group-list"]
-
-
+        result = mbz.browse_release_groups(artist=id)
     except mbz.WebServiceError as exc:
         result = None
-    #if "artist" in result:
-    return result
-    #        return result
-    #   else:
-    #      return "Woops"
 
+    if "release-group-list" in result:
+        return result["release-group-list"]
+    return None
+
+# Endpoint to return the image for a release-group.
+# This is done separately such that the browser can load these images after
+# the rest of the page has loaded, since this API is quite slow.
+#
+# id: release-group MBID
 @app.route('/cover/<id>')
 def api_get_cover_image(id):
     try:
         mbz.set_useragent("Artistics", "v1.0","hi@mstratford.net")
         data = mbz.get_release_group_image_list(id)
+
+        # There can be multiple, but the one we're looking for is the front cover.
         for image in data["images"]:
             if "Front" in image["types"] and image["approved"]:
+
+                # Redirect the browser's request to the image URL the API provided.
                 return redirect(image["thumbnails"]["large"], code=302)
 
 
     except mbz.WebServiceError as exc:
-        return redirect("/images/question.png", code=302)
+        pass
+
+    # If we encounter an error with the API (eg 404, or only back image etc), return a placeholder image.
+    return redirect("/images/question.png", code=302)
 
 
 @app.route('/images/<path:path>')
