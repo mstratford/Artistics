@@ -2,6 +2,7 @@
 
 {% block content %}
 
+{% if data.term %}
   <section class="jumbotron text-center">
     <div class="container">
       <span class="text-muted display-5">Searching for...</span>
@@ -30,5 +31,18 @@
     <p>Woops, we couldn't find any artists with that name.</p>
   {% endif %}
   </div>
+
+{% else %}
+  <section class="jumbotron text-center">
+    <div class="container">
+      <span class="text-muted display-5">Searching for...</span>
+      <h1 class="display-3">Nothing.</h1>
+      <p class="lead text-muted">Looks like you didn't search for anything.</p>
+      <p>
+        <a href="/" class="btn btn-primary my-2">Search again...</a>
+      </p>
+    </div>
+  </section>
+{% endif %}
 
 {% endblock %}

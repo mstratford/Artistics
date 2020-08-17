@@ -14,11 +14,13 @@ def page():
 
 @app.route('/search')
 def page_search():
+    result = None
     if request.args.get("artist"):
         term = request.args.get("artist")
         result = api_search_artist(term)
         result["term"] = term
-        return render_template('artist-list.html', data=result)
+
+    return render_template('artist-list.html', data=result)
 
 
 @app.route('/artist/<id>')
