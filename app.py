@@ -176,3 +176,8 @@ def api_get_lyrics(artist, title):
         return (info)
     else:
         return None
+
+
+if __name__ == "__main__":
+    # Run app in threaded mode such that cover images can be requested in parallel.
+    app.run(host="0.0.0.0", port="5000", threaded=True)
