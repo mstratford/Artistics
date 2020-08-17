@@ -1,9 +1,11 @@
 
 {% extends 'base.html' %}
 
-{% block content %}
-{% if data["artist"] %}
 
+{% block title %} | Artist | {% if data.artist %}{{data.artist.name}}{% else %}404{% endif %}{% endblock %}
+
+{% block content %}
+{% if data.artist %}
 
   <section class="jumbotron text-center">
     <div class="container">
