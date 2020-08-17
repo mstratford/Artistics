@@ -70,6 +70,12 @@ def page_artist(id):
 
     return render_template('artist.html', data=result)
 
+# Serve static files from the images folder.
+@app.route('/images/<path:path>')
+def serve_images(path):
+    return send_from_directory('images', path)
+
+# Retrieve artists matching a search term (name) from MusicBrainz
 def api_search_artist(name):
     try:
         mbz.set_useragent("Artistics", "v1.0","hi@mstratford.net")
@@ -79,9 +85,9 @@ def api_search_artist(name):
 
     if "artist-list" in result:
         return result["artist-list"]
-    else:
-        return None
+    return None
 
+# Retrieve artist details matching a MBID from MusicBrainz
 def api_get_artist(id):
     try:
         mbz.set_useragent("Artistics", "v1.0","hi@mstratford.net")
@@ -93,6 +99,7 @@ def api_get_artist(id):
         return result["artist"]
     return None
 
+# Get all recordings for an artist matching a MBID from MusicBrainz
 def api_get_recordings(id):
     try:
         mbz.set_useragent("Artistics", "v1.0","hi@mstratford.net")
@@ -104,6 +111,8 @@ def api_get_recordings(id):
         return result["recording-list"]
     return None
 
+# Get all release(groups) for an artist matching a MBID from MusicBrainz
+# Release groups is used because it combines CD/Download releases of an albumn etc.
 def api_get_releases(id):
     try:
         mbz.set_useragent("Artistics", "v1.0","hi@mstratford.net")
@@ -139,11 +148,6 @@ def api_get_cover_image(id):
 
     # If we encounter an error with the API (eg 404, or only back image etc), return a placeholder image.
     return redirect("/images/question.png", code=302)
-
-
-@app.route('/images/<path:path>')
-def serve_images(path):
-    return send_from_directory('images', path)
 
 def api_get_lyrics(artist, title):
     artist = urllib.parse.quote(
