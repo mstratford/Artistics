@@ -9,6 +9,9 @@ from multiprocessing import Pool
 from typing import List
 from functools import partial
 from itertools import repeat
+import datetime
+import math
+
 app = Flask(__name__)
 
 class recording():
@@ -27,6 +30,16 @@ class recording():
 
     def __lt__(self, other):
         return self.title < other.title
+
+
+@app.template_filter('duration')
+def timectime(s):
+    if s != None:
+        duration = int(s) / 1000
+        mins = math.floor(duration / 60)
+        secs = math.floor(duration % 60)
+        return "{}:{:0>2d}".format(mins, secs)
+    return None
 
 # Render the homepage.
 @app.route('/')
