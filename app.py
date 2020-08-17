@@ -5,8 +5,28 @@ import requests
 import html
 import urllib.parse
 import re
-
+from multiprocessing import Pool
+from typing import List
+from functools import partial
+from itertools import repeat
 app = Flask(__name__)
+
+class recording():
+
+    def __init__(self, title, length, lyrics = None, cover_image = None):
+        self.title = title
+        self.length = length
+        self.lyrics = lyrics
+        self.cover_image = cover_image
+
+    def __eq__(self, other):
+        return self.title == other.title
+
+    def __hash__(self):
+        return hash(('title', self.title))
+
+    def __lt__(self, other):
+        return self.title < other.title
 
 # Render the homepage.
 @app.route('/')
@@ -40,19 +60,43 @@ def page_artist(id):
     # Template will render a 404.
     if artist:
 
+        # Get recordings (songs) and releases (EP's, singles etc.) from this artist.
         recordings = api_get_recordings(id)
         releases = api_get_releases(id)
+
+        # Remove duplicate tracks (with same name) based on class __eq__
+        recordings = list(set(recordings))
+        recordings.sort()
+
+        # Add in a cover image url to each release. The API is called in api_get_cover_image on request.
         for release in releases:
             release["cover_image"] = "/cover/{}".format(release["id"])
 
         lyrics_lengths_avg = 0.0
         lyrics_count = 0
-        for recording in recordings:
-            lyrics = api_get_lyrics(artist["name"], recording["title"])
-            if (lyrics):
-                lyrics_lengths_avg += lyrics["word-count"]
+
+        # Get the lyrics for each song. The API is slow and we typically have lots of tracks.
+        # We'll process each track as a separate process, upto 10 at once.
+        with Pool(processes=10) as pool:
+            lyrics = pool.starmap(
+                api_get_lyrics,
+                zip(
+                    recordings, # Feed in all of the tracks to request.
+                    repeat(artist["name"]) # All tracks share the same artist.
+                )
+            )
+
+        # Once the lyrics have been retrieved from all processes, map them back to the recordings.
+        for i in range(len(recordings)):
+            recordings[i].lyrics = lyrics[i]
+
+        # Count up the words and number of tracks with lyrics available.
+        for lyric in lyrics:
+            if lyric:
+                lyrics_lengths_avg += lyric["word-count"]
                 lyrics_count += 1
-            recording["lyrics"] = lyrics
+
+        # Calculate the average if we've got more than 0 tracks to divide by.
         if lyrics_count > 0:
             lyrics_lengths_avg /= lyrics_count
 
@@ -108,7 +152,8 @@ def api_get_recordings(id):
         result = None
 
     if "recording-list" in result:
-        return result["recording-list"]
+        return [recording(recordings["title"], recordings["length"]) for recordings in result["recording-list"]]
+
     return None
 
 # Get all release(groups) for an artist matching a MBID from MusicBrainz
@@ -149,7 +194,9 @@ def api_get_cover_image(id):
     # If we encounter an error with the API (eg 404, or only back image etc), return a placeholder image.
     return redirect("/images/question.png", code=302)
 
-def api_get_lyrics(artist, title):
+
+def api_get_lyrics(recording, artist):
+    title = recording.title
     artist = urllib.parse.quote(
         html.escape(artist),
         safe=''
@@ -165,20 +212,18 @@ def api_get_lyrics(artist, title):
         data = r.json()["lyrics"]
 
         string = html.escape(data)
-
         # Split the string up into an array of words by replacing any special chars with spaces
         # (excluding - and ', since these are commonly used in regular speech)
         # and splitting by these spaces
+
         words = re.sub("[^\w'-]", " ",  string).split()
-        print(words)
+
         info = {
             "string": string,
             "words": words,
-            "word-count": len(data)
+            "word-count": len(words)
         }
-        return (info)
-    else:
-        return None
+        return info
 
 
 if __name__ == "__main__":
