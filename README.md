@@ -8,3 +8,5 @@ This uses the MusicBrainz and lyrics.ovh APIs.
 ### Install and Run
 
 On Linux / Mac, just `make install` and `make run`.
+
+The website will be accessable at `http://localhost:5000`
