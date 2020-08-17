@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+  <section class="jumbotron text-center">
+    <div class="container">
+      <span class="text-muted display-5">Searching for...</span>
+      <h1 class="display-3">"{{ data.term }}"</h1>
+      <p class="lead text-muted"></p>
+      <p>
+        <a href="/" class="btn btn-primary my-2">Search again...</a>
+      </p>
+    </div>
+  </section>
+  <div class="container text-center p-2">
+
+  {% if data["artist-list"] %}
+    <span class="text-muted">Maybe it's one of these?</span>
+    <hr>
+    {% for result in data["artist-list"] %}
+    <a href={{ "/artist/" + result["id"] }}>
+      <div class="artist">
+        <h3 class="name">{{ result["name"] }}</h3>
+      </div>
+    </a>
+    {% endfor %}
+
+  {% else %}
+    <h3>No Results :/</h3>
+    <p>Woops, we couldn't find any artists with that name.</p>
+  {% endif %}
+  </div>
+
+{% endblock %}

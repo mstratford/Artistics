@@ -1,0 +1,102 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+{% if data["artist"] %}
+
+
+  <section class="jumbotron text-center">
+    <div class="container">
+      <h1>{{ data.artist.name }}</h1>
+      <p class="lead text-muted">{{ data.artist.disambiguation }}</p>
+      <p>
+        <span class="text-muted"><a href="https://musicbrainz.org/artist/{{ data.artist.id }}" class="btn btn-primary my-2">Full info</a> from MusicBrainz</span>
+        <br>
+        <a href="/" class="btn btn-secondary my-2">Search again...</a>
+      </p>
+    </div>
+  </section>
+  <div class="container py-2">
+    <h2 class="text-center">Discography</h2>
+  </div>
+
+  <div class="bg-light">
+    <div class="container-fluid text-center">
+      <h3 class="py-3 ">Releases</h3>
+      {% if data["releases"] %}
+      <div class="row">
+        {% for recording in data["releases"] %}
+          <div class="col-md-4 col-xl-2">
+            <div class="card mb-4 shadow-sm">
+              <img src="{{ recording.cover_image }}" class="img-fluid" />
+              <div class="card-body">
+                <h4>{{ recording.title }}</h4>
+                <p class="card-text text-muted">{{ recording["first-release-date"] }}</p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+        </div>
+      {% else %}
+        <p>Sorry, we've not found any releases for this artist. :/</p>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <div class="container-fluid bg-secondary">
+    <div class="container">
+      <h3 class="py-3 text-center">Recordings</h3>
+
+      {% if data["recordings"] %}
+      <div class="row">
+        <div class="col-lg-8">
+          <table class="table">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Length</th>
+                <th scope="col">Lyrics</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for recording in data["recordings"] %}
+                <tr>
+                  <td>{{ recording.title }}</td>
+                  <td>{{ recording.length }}</td>
+                  <td>{% if recording.lyrics %}{{ recording.lyrics["word-count"] }} words{% else %}unknown {% endif %}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="col-lg-4">
+          Lyrics Statistics: Average of <strong>{{ data.lyrics["avg_words"] }} words</strong> per track from
+          <strong>{{ data["lyrics"]["recordings"] }}</strong> known recordings.
+        </div>
+      </div>
+      {% else %}
+        <p>This artist doesn't appear to have any known recordings.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+
+{% else %}
+  <section class="jumbotron text-center">
+    <div class="container">
+      <h1 class="display-2">404</h1>
+      <h2>Who's this?</h2>
+      <p class="lead text-muted"><p>Woops, we couldn't find an artist with the provided ID.</p></p>
+      <p>
+        <a href="/" class="btn btn-primary my-2">Search again...</a>
+      </p>
+    </div>
+  </section>
+  <h3></h3>
+
+{% endif %}
+{% endblock %}
+
+
