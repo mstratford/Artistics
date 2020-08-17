@@ -9,10 +9,21 @@
     <div class="container">
       <h1>{{ data.artist.name }}</h1>
       <p class="lead text-muted">{{ data.artist.disambiguation }}</p>
+      <hr>
+      {% if data["recordings"] %}
       <p>
-        <span class="text-muted"><a href="https://musicbrainz.org/artist/{{ data.artist.id }}" class="btn btn-primary my-2">Full info</a> from MusicBrainz</span>
-        <br>
+        Lyrics Statistics: Average of <span class="display-4">{{ data.lyrics["avg_words"] | int }}</span> words</strong> per track from
+        <span class="display-4">{{ data["lyrics"]["recordings"] }}</span> known recordings.
+      </p>
+      {% else %}
+      <p>
+        Lyrics Statistics: We don't have any song lyrics for this artist. Sorry about that :/
+      </p>
+      {% endif %}
+      <hr>
+      <p>
         <a href="/" class="btn btn-secondary my-2">Search again...</a>
+        <span class="text-muted"><a href="https://musicbrainz.org/artist/{{ data.artist.id }}" class="btn btn-primary my-2">Full info</a> from MusicBrainz</span>
       </p>
     </div>
   </section>
@@ -49,8 +60,6 @@
       <h3 class="py-3 text-center">Recordings</h3>
 
       {% if data["recordings"] %}
-      <div class="row">
-        <div class="col-lg-8">
           <table class="table">
             <thead class="thead-dark">
               <tr>
@@ -63,18 +72,12 @@
               {% for recording in data["recordings"] %}
                 <tr>
                   <td>{{ recording.title }}</td>
-                  <td>{{ recording.length }}</td>
+                  <td>{{ recording.length | duration }}</td>
                   <td>{% if recording.lyrics %}{{ recording.lyrics["word-count"] }} words{% else %}unknown {% endif %}</td>
                 </tr>
               {% endfor %}
             </tbody>
           </table>
-        </div>
-        <div class="col-lg-4">
-          Lyrics Statistics: Average of <strong>{{ data.lyrics["avg_words"] }} words</strong> per track from
-          <strong>{{ data["lyrics"]["recordings"] }}</strong> known recordings.
-        </div>
-      </div>
       {% else %}
         <p>This artist doesn't appear to have any known recordings.</p>
       {% endif %}
