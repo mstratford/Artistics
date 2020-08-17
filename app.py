@@ -86,14 +86,12 @@ def api_get_artist(id):
     try:
         mbz.set_useragent("Artistics", "v1.0","hi@mstratford.net")
         result = mbz.get_artist_by_id(id)
-
     except mbz.WebServiceError as exc:
         result = None
 
     if "artist" in result:
-        result = result["artist"]
-
-    return result
+        return result["artist"]
+    return None
 
 def api_get_recordings(id):
     try:
