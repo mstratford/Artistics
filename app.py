@@ -152,7 +152,13 @@ def api_get_recordings(id):
         result = None
 
     if "recording-list" in result:
-        return [recording(recordings["title"], recordings["length"]) for recordings in result["recording-list"]]
+        return [
+            recording(
+                recordings["title"],
+                recordings["length"] if "length" in recordings else None
+            )
+            for recordings in result["recording-list"]
+        ]
 
     return None
 
