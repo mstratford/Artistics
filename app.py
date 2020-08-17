@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, send_from_directory
 from markupsafe import escape
 import musicbrainzngs as mbz
 import requests
-import cgi
+import html
 import urllib.parse
 import re
 
@@ -151,11 +151,11 @@ def api_get_cover_image(id):
 
 def api_get_lyrics(artist, title):
     artist = urllib.parse.quote(
-        cgi.escape(artist),
+        html.escape(artist),
         safe=''
     )
     title = urllib.parse.quote(
-        cgi.escape(title),
+        html.escape(title),
         safe=''
     )
     r = requests.get("https://api.lyrics.ovh/v1/{}/{}".format(artist, title))
@@ -164,9 +164,8 @@ def api_get_lyrics(artist, title):
 
         data = r.json()["lyrics"]
 
-        print(data)
+        string = html.escape(data)
 
-        string = cgi.escape(data)
         # Split the string up into an array of words by replacing any special chars with spaces
         # (excluding - and ', since these are commonly used in regular speech)
         # and splitting by these spaces
