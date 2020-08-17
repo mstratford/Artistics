@@ -8,6 +8,7 @@ import re
 
 app = Flask(__name__)
 
+# Render the homepage.
 @app.route('/')
 def page():
     return render_template('home.html', data=None)
@@ -28,39 +29,45 @@ def page_search():
     return render_template('artist-list.html', data=result)
 
 
-@app.route('/artist/<id>')
+# Render the artist info page.
+# id: MBID string from MusicBrainz.
+@app.route('/artist/<string:id>')
 def page_artist(id):
-    result = {}
+
     artist = api_get_artist(id)
 
     # End early if we don't have an artist for the user's ID.
-    if not artist:
-        return render_template('artist.html', data=result), 404
+    # Template will render a 404.
+    if artist:
 
+        recordings = api_get_recordings(id)
+        releases = api_get_releases(id)
+        for release in releases:
+            release["cover_image"] = "/cover/{}".format(release["id"])
 
-    recordings = api_get_recordings(id)["recording-list"]
-    releases = api_get_releases(id)
-    for release in releases:
-        release["cover_image"] = "/cover/{}".format(release["id"])
+        lyrics_lengths_avg = 0.0
+        lyrics_count = 0
+        for recording in recordings:
+            lyrics = api_get_lyrics(artist["name"], recording["title"])
+            if (lyrics):
+                lyrics_lengths_avg += lyrics["word-count"]
+                lyrics_count += 1
+            recording["lyrics"] = lyrics
+        if lyrics_count > 0:
+            lyrics_lengths_avg /= lyrics_count
 
-    lyrics_lengths_avg = 0.0
-    lyrics_count = 0
-    for recording in recordings:
-        lyrics = api_get_lyrics(artist["name"], recording["title"])
-        if (lyrics):
-            lyrics_lengths_avg += lyrics["word-count"]
-            lyrics_count += 1
-        recording["lyrics"] = lyrics
-    if lyrics_count > 0:
-        lyrics_lengths_avg /= lyrics_count
+        result = {
+            "artist": artist,
+            "recordings": recordings,
+            "releases": releases,
+            "lyrics": {
+                "recordings": lyrics_count,
+                "avg_words": lyrics_lengths_avg
+            }
+        }
+    else:
+        result = {}
 
-    result["artist"] = artist
-    result["recordings"] = recordings
-    result["releases"] = releases
-    result["lyrics"] = {
-        "recordings": lyrics_count,
-        "avg_words": lyrics_lengths_avg
-    }
     return render_template('artist.html', data=result)
 
 def api_search_artist(name):
@@ -79,11 +86,12 @@ def api_get_artist(id):
     try:
         mbz.set_useragent("Artistics", "v1.0","hi@mstratford.net")
         result = mbz.get_artist_by_id(id)
-        if "artist" in result:
-            result = result["artist"]
 
     except mbz.WebServiceError as exc:
         result = None
+
+    if "artist" in result:
+        result = result["artist"]
 
     return result
 
