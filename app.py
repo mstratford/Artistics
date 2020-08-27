@@ -138,7 +138,7 @@ def api_search_artist(name):
         mbz.set_useragent("Artistics", "v1.0","hi@mstratford.net")
         result = mbz.search_artists(artist = name)
     except mbz.WebServiceError as exc:
-        result = None
+        result = {}
 
     if "artist-list" in result:
         return result["artist-list"]
@@ -150,7 +150,7 @@ def api_get_artist(id):
         mbz.set_useragent("Artistics", "v1.0","hi@mstratford.net")
         result = mbz.get_artist_by_id(id)
     except mbz.WebServiceError as exc:
-        result = None
+        result = {}
 
     if "artist" in result:
         return result["artist"]
@@ -162,7 +162,7 @@ def api_get_recordings(id):
         mbz.set_useragent("Artistics", "v1.0","hi@mstratford.net")
         result = mbz.browse_recordings(artist=id, limit=1000)
     except mbz.WebServiceError as exc:
-        result = None
+        result = {}
 
     if "recording-list" in result:
         return [
